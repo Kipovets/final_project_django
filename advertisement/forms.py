@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Advertisement, Reply
+from .models import Advertisement, Reply, OneTimeCode
 from tinymce.widgets import TinyMCE
 
 
@@ -29,8 +29,10 @@ class AdvertisementForm(forms.ModelForm):
         fields = ['category', 'title', 'description', 'price']
 
 
-class FeedbackForm(forms.ModelForm):
-    pass
+class VerifyForm(forms.ModelForm):
+    class Meta:
+        model = OneTimeCode
+        fields = ['user', 'code']
 
 
 class ReplyForm(forms.ModelForm):

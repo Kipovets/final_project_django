@@ -11,6 +11,7 @@ class User(AbstractUser):
         _('email address'),
         unique=True,
     )
+    email_verify = models.BooleanField(default=False)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
 
@@ -47,3 +48,8 @@ class Category(models.Model):
 class AdvertisementCategory(models.Model):
     advertisement = models.ForeignKey(Advertisement, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+
+class OneTimeCode(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)

@@ -1,11 +1,16 @@
+import random
+
 from django.contrib.auth import authenticate, login
+from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render, get_object_or_404, redirect
+from django.template.loader import render_to_string
+
 from django.views import View
 from django.views.generic import TemplateView, CreateView, ListView
-from django.utils.translation import gettext_lazy as _
 
-from .models import Advertisement, User
-from .forms import AdvertisementForm, ReplyForm, RegistrationForm
+from .models import Advertisement, User, OneTimeCode
+from .forms import AdvertisementForm, ReplyForm, RegistrationForm, VerifyForm
+from buy_and_sell.settings import DEFAULT_FROM_EMAIL
 
 
 class IndexView(TemplateView):
@@ -29,6 +34,43 @@ class Register(View):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password1')
             user = authenticate(email=email, password=password)
+            numbers = list('0123456789')
+            verify_code = ''
+            for x in range(6):
+                verify_code += random.choice(numbers)
+            OneTimeCode.objects.create(user=user, code=verify_code)
+            html_content = render_to_string('registration/verify_email.html', {'code': verify_code})
+            msg = EmailMultiAlternatives(
+                subject='Подтверждение регистрации',
+                from_email=DEFAULT_FROM_EMAIL,
+                to=[email]
+            )
+            msg.attach_alternative(html_content, 'text/html')
+            msg.send()
+            return redirect('confirm_email')
+        context = {
+            'form': form
+        }
+        return render(request, self.template_name, context)
+
+
+class EmailVerify(View):
+    template_name = 'registration/confirm.html'
+
+    def get(self, request):
+        context = {
+            'form': VerifyForm
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request):
+        form = VerifyForm(request.POST)
+        email = request.POST['user']
+        code = request.POST['code']
+        if OneTimeCode.objects.filter(user__email=email, code=code).exists():
+            user = User.objects.get(email=email)
+            user.email_verify = True
+            user.save()
             login(request, user)
             return redirect('index')
         context = {
