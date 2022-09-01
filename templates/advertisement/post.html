@@ -3,11 +3,11 @@
 {% block title %}{{ post.title }}{% endblock title %}
 
 {% block content %}
-{{ post.title }}
-{{ post.time_create }}
-{{ post.price }}
-{{ post.description|safe }}
-{{ post.author.user.username }}
+<h1 align="center"> {{ post.title }}</h1><br>
+<h5 align="center"> Объявление опубликовано: {{ post.time_create }}</h5><br>
+<h2 align="center">Цена: {{ post.price }} рублей</h2><br>
+{{ post.description|safe }}<br>
+{{ post.author.username }}<br>
 <p>Отклинулись уже {{ replies }} раз</p>
 {% if new_reply %}
 <h4>Ваш отклик отправлен</h4>

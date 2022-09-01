@@ -1,6 +1,7 @@
 import random
 
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.loader import render_to_string
@@ -79,7 +80,7 @@ class EmailVerify(View):
         return render(request, self.template_name, context)
 
 
-class AdvertisementCreate(CreateView):
+class AdvertisementCreate(LoginRequiredMixin, CreateView):
     form_class = AdvertisementForm
     model = Advertisement
     template_name = 'advertisement/create.html'
